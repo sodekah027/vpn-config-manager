@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>VPN Config Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        body.light {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .config-box {
+            word-break: break-all;
+            white-space: normal;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between py-8 px-4 font-sans transition-colors duration-200">
+
+    <div class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 justify-center items-center p-4" id="infoModal">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" id="infoModalContent"></div>
+    </div>
+
+    <div class="max-w-lg w-full mx-auto my-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold tracking-tight mb-2 text-slate-100">FASTER ACCOUNT</h1>
+            <p class="text-slate-400 text-sm">Premium VPN Configuration</p>
+        </div>
+
+        <div class="space-y-4">
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-cyan-400 text-sm tracking-wider">⚡ VMESS</span>
+                    <button id="copyVmess" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150">
+                        📋 COPY
+                    </button>
+                </div>
+                <div id="vmessLink" class="config-box bg-slate-950 border border-slate-800/60 rounded-lg p-3 text-xs font-mono text-slate-300 select-all min-h-[40px]">
+                    <div class="animate-pulse text-slate-500">Loading configuration...</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-purple-400 text-sm tracking-wider">🟣 VLESS</span>
+                    <button id="copyVless" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150">
+                        📋 COPY
+                    </button>
+                </div>
+                <div id="vlessLink" class="config-box bg-slate-950 border border-slate-800/60 rounded-lg p-3 text-xs font-mono text-slate-300 select-all min-h-[40px]">
+                    <div class="animate-pulse text-slate-500">Loading configuration...</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-orange-400 text-sm tracking-wider">🟠 TROJAN</span>
+                    <button id="copyTrojan" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150">
+                        📋 COPY
+                    </button>
+                </div>
+                <div id="trojanLink" class="config-box bg-slate-950 border border-slate-800/60 rounded-lg p-3 text-xs font-mono text-slate-300 select-all min-h-[40px]">
+                    <div class="animate-pulse text-slate-500">Loading configuration...</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-blue-400 text-sm tracking-wider">🔵 SHADOWSOCKS</span>
+                    <button id="copySS" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150">
+                        📋 COPY
+                    </button>
+                </div>
+                <div id="ssLink" class="config-box bg-slate-950 border border-slate-800/60 rounded-lg p-3 text-xs font-mono text-slate-300 select-all min-h-[40px]">
+                    <div class="animate-pulse text-slate-500">Loading configuration...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="copyStatus" class="text-center text-emerald-400 text-sm font-medium mt-4 h-5"></div>
+    </div>
+
+    <div class="text-center text-xs text-slate-500 mt-8 space-y-1">
+        <div class="text-slate-400 font-medium">⚡ Powered by Technic Developer</div>
+        <div>VPN • WebSocket • Premium</div>
+        <div>© 2026 All Rights Reserved</div>
+    </div>
+
+    <script>
+        const bodyElement = document.body;
+
+        if (localStorage.getItem('theme') === 'light') {
+            bodyElement.classList.add('light');
+        }
+
+        const uuid = "a1dd88e7-98ae-418f-8794-71000e16f71a";
+        const host = window.location.hostname;
+        const VMS_PRE = atob('dm1lc3M6Ly8=');
+        const VLS_PRE = atob('dmxlc3M6Ly8=');
+        const TRJ_PRE = atob('dHJvamFuOi8v');
+        const VMS_LBL = atob('W1ZNZXNzLVRMU10=');
+        const VLS_LBL = atob('W1ZMRVNTLVRMU10=');
+        const TRJ_LBL = atob('W1Ryb2phbi1UTFNd');
+        const SS_LBL = atob('W1NTLVRMU10=');
+
+        const countryNameFormatter = new Intl.DisplayNames(['en'], { type: 'region' });
+
+        function getCountryFullName(countryCode) {
+            if (!countryCode) return 'Unknown';
+            try {
+                const upperCode = countryCode.toUpperCase();
+                const fullName = countryNameFormatter.of(upperCode);
+                return fullName || countryCode;
+            } catch (error) {
+                return countryCode;
+            }
+        }
+
+        function generateVmess(proxy) {
+            const path = "/vmess";
+            const vmessObj = { v: "2", ps: VMS_LBL + " " + proxy.country + " " + proxy.isp, add: host, port: 443, id: uuid, aid: "0", scy: "zero", net: "ws", type: "none", host: host, path: path, tls: "tls", sni: host };
+            return VMS_PRE + btoa(JSON.stringify(vmessObj));
+        }
+
+        function generateVless(proxy) {
+            const path = encodeURIComponent("/vless");
+            return VLS_PRE + uuid + "@" + host + ":443?encryption=none&security=tls&type=ws&host=" + host + "&path=" + path + "&sni=" + host + "#" + encodeURIComponent(VLS_LBL + " " + proxy.country);
+        }
+
+        function generateTrojan(proxy) {
+            const path = encodeURIComponent("/trojan");
+            return TRJ_PRE + uuid + "@" + host + ":443?security=tls&type=ws&host=" + host + "&path=" + path + "&sni=" + host + "#" + encodeURIComponent(TRJ_LBL + " " + proxy.country);
+        }
+
+        function generateShadowsocks(proxy) {
+            const method = "none";
+            const password = uuid;
+            const encodedAuth = btoa(method + ':' + password);
+            const path = encodeURIComponent("/shadowsocks");
+            return 'ss://' + encodedAuth + '@' + host + ':443?path=' + path + '&security=tls&host=' + host + '&type=ws&sni=' + host + '#' + encodeURIComponent(SS_LBL + " " + proxy.country);
+        }
+
+        function getFlagEmoji(countryCode) {
+            if (!countryCode || countryCode.length !== 2) return '🌐';
+            const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
+            return String.fromCodePoint(...codePoints);
+        }
+
+        const vipProxy = {
+            ip: "",
+            port: "",
+            country: "VIP",
+            countryCode: "VIP",
+            isp: ""
+        };
+
+        document.getElementById("vmessLink").textContent = generateVmess(vipProxy);
+        document.getElementById("vlessLink").textContent = generateVless(vipProxy);
+        document.getElementById("trojanLink").textContent = generateTrojan(vipProxy);
+        document.getElementById("ssLink").textContent = generateShadowsocks(vipProxy);
+
+        async function copyVIP(type) {
+            let config = "";
+
+            switch (type) {
+                case "vmess":
+                    config = generateVmess(vipProxy);
+                    break;
+                case "vless":
+                    config = generateVless(vipProxy);
+                    break;
+                case "trojan":
+                    config = generateTrojan(vipProxy);
+                    break;
+                case "ss":
+                    config = generateShadowsocks(vipProxy);
+                    break;
+                default:
+                    return;
+            }
+
+            const status = document.getElementById("copyStatus");
+
+            try {
+                await navigator.clipboard.writeText(config);
+                const btnMap={
+                    vmess:"copyVmess",
+                    vless:"copyVless",
+                    trojan:"copyTrojan",
+                    ss:"copySS"
+                };
+
+                const btn = document.getElementById(btnMap[type]);
+                const old = btn.innerHTML;
+
+                btn.innerHTML = "✅ COPIED";
+                btn.disabled = true;
+
+                btn.classList.add("scale-110");
+
+                setTimeout(() => {
+                    btn.classList.remove("scale-110");
+                },250);
+
+                setTimeout(() => {
+                    btn.innerHTML = old;
+                    btn.disabled = false;
+                },1800);
+                status.innerHTML = "✅ " + type.toUpperCase() + " Copied";
+
+                const toast=document.getElementById("toast");
+
+                if(toast){
+                    toast.innerHTML= "✅ "+type.toUpperCase()+" Copied";
+                    toast.classList.remove("opacity-0");
+                    setTimeout(()=>{
+                        toast.classList.add("opacity-0");
+                    },1800);
+                }
+
+            } catch (err) {
+                console.error(err);
+                status.innerHTML = "❌ Clipboard Failed";
+            }
+
+            setTimeout(() => {
+                status.innerHTML = "";
+            }, 1800);
+        }
+
+        document.getElementById("copyVmess").onclick = () => copyVIP("vmess");
+        document.getElementById("copyVless").onclick = () => copyVIP("vless");
+        document.getElementById("copyTrojan").onclick = () => copyVIP("trojan");
+        document.getElementById("copySS").onclick = () => copyVIP("ss");
+    </script>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 font-medium">
+        ✅ Copied
+    </div>
+
+</body>
+</html>
