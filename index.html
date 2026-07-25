@@ -90,29 +90,55 @@
         document.getElementById("vlessLink").textContent = configs.vless;
         document.getElementById("trojanLink").textContent = configs.trojan;
 
-        async function copyConfig(type) {
-            const config = configs[type];
-            const status = document.getElementById("copyStatus");
+        function fallbackCopy(text) {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = document.execCommand("copy");
+            document.body.removeChild(ta);
+            return ok;
+        }
 
-            try {
-                await navigator.clipboard.writeText(config);
-                status.innerHTML = "✅ " + type.toUpperCase() + " Copied";
+        function copyConfig(type) {
+            var config = configs[type];
+            var status = document.getElementById("copyStatus");
 
-                const toast = document.getElementById("toast");
-                if (toast) {
-                    toast.innerHTML = "✅ " + type.toUpperCase() + " Copied";
-                    toast.classList.remove("opacity-0");
-                    setTimeout(() => {
-                        toast.classList.add("opacity-0");
-                    }, 1800);
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(config).then(function() {
+                    showCopied(type, status);
+                }).catch(function() {
+                    if (fallbackCopy(config)) {
+                        showCopied(type, status);
+                    } else {
+                        status.innerHTML = "❌ Clipboard Failed";
+                    }
+                });
+            } else {
+                if (fallbackCopy(config)) {
+                    showCopied(type, status);
+                } else {
+                    status.innerHTML = "❌ Clipboard Failed";
                 }
-            } catch (err) {
-                status.innerHTML = "❌ Clipboard Failed";
             }
 
-            setTimeout(() => {
+            setTimeout(function() {
                 status.innerHTML = "";
             }, 1800);
+        }
+
+        function showCopied(type, status) {
+            status.innerHTML = "✅ " + type.toUpperCase() + " Copied";
+            var toast = document.getElementById("toast");
+            if (toast) {
+                toast.innerHTML = "✅ " + type.toUpperCase() + " Copied";
+                toast.classList.remove("opacity-0");
+                setTimeout(function() {
+                    toast.classList.add("opacity-0");
+                }, 1800);
+            }
         }
     </script>
 
